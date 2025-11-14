@@ -18,47 +18,33 @@
   <button class="on" onclick="turnOn()">ON</button>
   <button class="off" onclick="turnOff()">OFF</button>
 
-  <script type="module">
-    // Firebase imports
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  <script>
+    const API = "https://YOUR_RAILWAY_URL";
 
-    // ✅ Your Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyB2M9-dLTXWsFWEUP0x-r9vYz4B33OtO4I",
-      authDomain: "home-62121.firebaseapp.com",
-      databaseURL: "https://home-62121-default-rtdb.firebaseio.com",
-      projectId: "home-62121",
-      storageBucket: "home-62121.firebasestorage.app",
-      messagingSenderId: "304579021481",
-      appId: "1:304579021481:web:4692093f84e1320a15b7b8"
-    };
+    // ---------------------------
+    // Fetch State Every Second
+    // ---------------------------
+    async function refreshState() {
+      let res = await fetch(`${API}/state`);
+      let data = await res.json();
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+      document.getElementById("relay").innerText =
+        data.relay === "1" ? "ON" : "OFF";
 
-    const relayRef = ref(db, "devices/relay");
-    const pirRef = ref(db, "devices/pir");
-
-    // 🔹 Real-time updates
-    onValue(relayRef, (snapshot) => {
-      const value = snapshot.val();
-      document.getElementById("relay").innerText = value === "1" ? "ON" : "OFF";
-    });
-
-    onValue(pirRef, (snapshot) => {
-      document.getElementById("pir").innerText = snapshot.val();
-    });
-
-    // 🔹 Control functions
-    window.turnOn = function() {
-      set(relayRef, "1");
-      set(pirRef, "Manual ON");
+      document.getElementById("pir").innerText = data.pir;
     }
 
-    window.turnOff = function() {
-      set(relayRef, "0");
-      set(pirRef, "Idle");
+    setInterval(refreshState, 1000); // auto refresh
+
+    // ---------------------------
+    // Control Functions
+    // ---------------------------
+    async function turnOn() {
+      await fetch(`${API}/control/on`, { method: "POST" });
+    }
+
+    async function turnOff() {
+      await fetch(`${API}/control/off`, { method: "POST" });
     }
   </script>
 </body>
