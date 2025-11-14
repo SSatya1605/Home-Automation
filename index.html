@@ -19,32 +19,46 @@
   <button class="off" onclick="turnOff()">OFF</button>
 
   <script>
-    const API = "https://YOUR_RAILWAY_URL";
+    const API = "https://smart-5sl4.onrender.com";
 
     // ---------------------------
     // Fetch State Every Second
     // ---------------------------
     async function refreshState() {
-      let res = await fetch(`${API}/state`);
-      let data = await res.json();
+      try {
+        let res = await fetch(`${API}/state`);
+        let data = await res.json();
 
-      document.getElementById("relay").innerText =
-        data.relay === "1" ? "ON" : "OFF";
+        document.getElementById("relay").innerText =
+          data.relay === "1" ? "ON" : "OFF";
 
-      document.getElementById("pir").innerText = data.pir;
+        document.getElementById("pir").innerText = data.pir;
+
+      } catch (e) {
+        console.log("Error fetching state:", e);
+      }
     }
 
-    setInterval(refreshState, 1000); // auto refresh
+    setInterval(refreshState, 1000);
+    refreshState(); // initial load
 
     // ---------------------------
     // Control Functions
     // ---------------------------
     async function turnOn() {
-      await fetch(`${API}/control/on`, { method: "POST" });
+      await fetch(`${API}/relay`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ state: "1" })
+      });
     }
 
     async function turnOff() {
-      await fetch(`${API}/control/off`, { method: "POST" });
+      await fetch(`${API}/relay`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ state: "0" })
+      });
     }
   </script>
 </body>
